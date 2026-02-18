@@ -26,10 +26,13 @@ export const VideoEngine: React.FC<VideoEngineProps> = ({
       setIsVideoReady(false);
       const video = transitionVideoRef.current;
       if (video) {
+        // Reset state before loading new source
+        video.pause();
         video.currentTime = 0;
-        video.load(); // Принудительная загрузка для внешних URL
+        video.load(); 
       }
     } else if (engineState === EngineState.IDLE) {
+      // Small timeout to allow fade out before resetting ready state
       const timeout = setTimeout(() => {
         setIsTransitioning(false);
         setIsVideoReady(false);
@@ -39,14 +42,18 @@ export const VideoEngine: React.FC<VideoEngineProps> = ({
   }, [engineState, transitionSrc]);
 
   const handleCanPlay = () => {
-    setIsVideoReady(true);
-    setIsTransitioning(true);
-    if (transitionVideoRef.current) {
-      transitionVideoRef.current.play().catch(err => {
-        console.warn("Autoplay failed:", err?.message || "Unknown error");
-        onTransitionEnd();
-      });
-    }
+    // Add a tiny buffer delay to ensure smooth start
+    setTimeout(() => {
+      setIsVideoReady(true);
+      setIsTransitioning(true);
+      if (transitionVideoRef.current && engineState === EngineState.TRANSITION) {
+        transitionVideoRef.current.play().catch(err => {
+          console.warn("Autoplay failed or interrupted:", err?.message);
+          // Fallback: Skip transition if it can't play
+          onTransitionEnd();
+        });
+      }
+    }, 50);
   };
 
   const handleTransitionEnded = () => {
@@ -54,8 +61,8 @@ export const VideoEngine: React.FC<VideoEngineProps> = ({
   };
 
   const handleVideoError = () => {
-    // Исправление: не передаем объект события (e) в console.error, чтобы избежать циклических ссылок
     console.error("Video Engine Error loading path:", transitionSrc);
+    // On error, immediately jump to the target location so user isn't stuck
     setIsTransitioning(false);
     onTransitionEnd();
   };
@@ -63,18 +70,18 @@ export const VideoEngine: React.FC<VideoEngineProps> = ({
   return (
     <div className="fixed inset-0 w-full h-full bg-void z-0 overflow-hidden pointer-events-none">
       
-      {/* СЛОЙ СЦЕНЫ (Статичное изображение) */}
+      {/* SCENE LAYER (Static background) */}
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-700"
         style={{ 
           backgroundImage: `url("${imageSrc}")`,
-          // Если видео готово и идет переход, затемняем картинку сильнее
+          // Dim scene during transition
           opacity: isTransitioning && isVideoReady ? 0.1 : 1,
           zIndex: 5
         }}
       />
 
-      {/* СЛОЙ ПЕРЕХОДА (Видео) */}
+      {/* TRANSITION LAYER (Video) */}
       {transitionSrc && (
         <video
           key={transitionSrc}
@@ -83,7 +90,6 @@ export const VideoEngine: React.FC<VideoEngineProps> = ({
           muted={muted}
           playsInline
           preload="auto"
-          crossOrigin="anonymous"
           onCanPlay={handleCanPlay}
           onEnded={handleTransitionEnded}
           onError={handleVideoError}
@@ -93,16 +99,16 @@ export const VideoEngine: React.FC<VideoEngineProps> = ({
         />
       )}
 
-      {/* ЭФФЕКТЫ ПОВЕРХ */}
+      {/* OVERLAY EFFECTS */}
       <div className="absolute inset-0 z-20 pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-150 contrast-150 mix-blend-overlay"></div>
       <div className="absolute inset-0 z-20 pointer-events-none bg-gradient-to-b from-black/20 via-transparent to-black/20 background-scanlines"></div>
       
-      {/* ИНДИКАТОР ЗАГРУЗКИ (для медленных ссылок) */}
+      {/* LOADING INDICATOR */}
       {engineState === EngineState.TRANSITION && !isVideoReady && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300">
            <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
-              <span className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase animate-pulse">Buffering_Stream...</span>
+              <span className="font-mono text-[10px] text-accent tracking-[0.3em] uppercase animate-pulse">Establishing_Link...</span>
            </div>
         </div>
       )}
