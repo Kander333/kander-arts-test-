@@ -1,16 +1,18 @@
 
 import { LocationMap } from './types';
 
-// Using github.com/.../raw/main/... format which is often more robust for video playback
+// Using a specific commit hash known to exist from previous logs
+const BASE_URL = "https://raw.githubusercontent.com/Kander333/kander-arts-test-/b1d975e16334171bba51ce7761d2b8a6a73b28e2";
+
 const ASSETS = {
   // Static Scenes (Images)
-  HUB_SCENE: "https://github.com/Kander333/kander-arts-test-/raw/main/Cinematic_wide_shot_2k_202602181954.jpeg",
-  ARCHIVE_SCENE: "https://github.com/Kander333/kander-arts-test-/raw/main/Abstract_control_room_202602182000.jpeg",
-  PROTOCOL_SCENE: "https://github.com/Kander333/kander-arts-test-/raw/main/Futuristic_gallery_corridor_202602182000.jpeg",
+  HUB_SCENE: `${BASE_URL}/Cinematic_wide_shot_2k_202602181954.jpeg`,
+  ARCHIVE_SCENE: `${BASE_URL}/Abstract_control_room_202602182000.jpeg`,
+  PROTOCOL_SCENE: `${BASE_URL}/Futuristic_gallery_corridor_202602182000.jpeg`,
   
   // Transitions (Videos)
-  TRANS_TO_ARCHIVE: "https://github.com/Kander333/kander-arts-test-/raw/main/Camera_moves_to_ARCHIVE.mp4",
-  TRANS_TO_PROTOCOL: "https://github.com/Kander333/kander-arts-test-/raw/main/Camera_moves_to_PROTOCOL%20_ROOM.mp4"
+  TRANS_TO_ARCHIVE: `${BASE_URL}/Camera_moves_to_ARCHIVE.mp4`,
+  TRANS_TO_PROTOCOL: `${BASE_URL}/Camera_moves_to_PROTOCOL%20_ROOM.mp4`
 };
 
 export const LOCATIONS: LocationMap = {
@@ -25,13 +27,15 @@ export const LOCATIONS: LocationMap = {
       {
         targetId: "archive",
         label: "DATA_ARCHIVE",
-        transitionVideo: ASSETS.TRANS_TO_ARCHIVE,
+        // Swapping: used to be TRANS_TO_ARCHIVE
+        transitionVideo: ASSETS.TRANS_TO_PROTOCOL,
         coordinates: { x: 35, y: 45 } 
       },
       {
         targetId: "protocol",
         label: "PROTOCOL_CHAMBER",
-        transitionVideo: ASSETS.TRANS_TO_PROTOCOL,
+        // Swapping: used to be TRANS_TO_PROTOCOL
+        transitionVideo: ASSETS.TRANS_TO_ARCHIVE,
         coordinates: { x: 65, y: 40 }
       }
     ]
@@ -47,7 +51,8 @@ export const LOCATIONS: LocationMap = {
       {
         targetId: "hub",
         label: "RETURN_TO_HUB",
-        transitionVideo: ASSETS.TRANS_TO_ARCHIVE,
+        // Swapping: used to be TRANS_TO_ARCHIVE
+        transitionVideo: ASSETS.TRANS_TO_PROTOCOL,
         coordinates: { x: 50, y: 85 }
       }
     ]
@@ -63,7 +68,8 @@ export const LOCATIONS: LocationMap = {
       {
         targetId: "hub",
         label: "EXIT_PROTOCOL",
-        transitionVideo: ASSETS.TRANS_TO_PROTOCOL,
+        // Swapping: used to be TRANS_TO_PROTOCOL
+        transitionVideo: ASSETS.TRANS_TO_ARCHIVE,
         coordinates: { x: 50, y: 85 }
       }
     ]

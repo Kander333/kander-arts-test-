@@ -16,6 +16,14 @@ function App() {
 
   // Derived state
   const currentLocation = useMemo(() => LOCATIONS[currentLocationId], [currentLocationId]);
+  
+  // Calculate which image should be "behind" the video
+  const activeImageSrc = useMemo(() => {
+    if (engineState === EngineState.TRANSITION && pendingTargetId) {
+      return LOCATIONS[pendingTargetId].imageScene;
+    }
+    return currentLocation.imageScene;
+  }, [currentLocation, engineState, pendingTargetId]);
 
   const onExitTriggered = (exit: Exit) => {
     if (engineState !== EngineState.IDLE) return;
@@ -39,7 +47,7 @@ function App() {
       
       {/* 1. THE ENGINE */}
       <VideoEngine 
-        imageSrc={currentLocation.imageScene}
+        imageSrc={activeImageSrc}
         transitionSrc={transitionVideoSrc}
         engineState={engineState}
         onTransitionEnd={handleTransitionComplete}
